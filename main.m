@@ -72,27 +72,31 @@ NB_CHIFFRES_IMAGE_TEST = NB_COLS_CHIFFRES_IMAGE_TEST * NB_LIGNES_CHIFFRES_IMAGE_
 %display(result);
 
 
+j=0;
+for zones=1:8
+        for nbK=1:15
+            probs = calculateProbsKPPV( IMAGE_FILENAME_LEARN, IMAGE_FILENAME_TEST, ...
+                zones, zones, NB_LIGNES_CHIFFRES_IMAGE_LEARN, NB_COLS_CHIFFRES_IMAGE_LEARN, ...
+                NB_LIGNES_CHIFFRES_IMAGE_TEST, NB_COLS_CHIFFRES_IMAGE_TEST, ...
+                DENSITE_SAVE_FILENAME, PROBA_DENSITE_SAVE_FILENAME,nbK)
 
-probs = calculateProbsKPPV( IMAGE_FILENAME_LEARN, IMAGE_FILENAME_TEST, ...
-    4, 4, NB_LIGNES_CHIFFRES_IMAGE_LEARN, NB_COLS_CHIFFRES_IMAGE_LEARN, ...
-    NB_LIGNES_CHIFFRES_IMAGE_TEST, NB_COLS_CHIFFRES_IMAGE_TEST, ...
-    DENSITE_SAVE_FILENAME, PROBA_DENSITE_SAVE_FILENAME,10)
 
 
+            sizeP = size(probs);
+            count =0;
+            for i=1:sizeP(1)
+               [val, idx] = max(probs(i,:));
+               if idx==(floor(i/NB_COLS_CHIFFRES_IMAGE_TEST) + 1)
+                   count = count + 1;
+               end
+            end
 
-sizeP = size(probs);
-count =0;
-for i=1:sizeP(1)
-   [val, idx] = max(probs(i,:));
-   display(idx);
-   display((i/NB_COLS_CHIFFRES_IMAGE_TEST) + 1);
-   if idx==(floor(i/NB_COLS_CHIFFRES_IMAGE_TEST) + 1)
-       count = count + 1;
-   end
+            j = j +1;
+            display(j);
+            percent = 100*count/sizeP(1);
+            display(percent);
+        end
 end
-
-percent = count/sizeP(1);
-display(percent);
 
 % checker si résultat ok :X
 % http://fr.wikipedia.org/wiki/Recherche_des_plus_proches_voisins
