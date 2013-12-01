@@ -1,7 +1,10 @@
-function [ indicesLinesCorrect, indicesCols ] = getIndicesOfLinesAndCols( BI, nbLines, nbCols )
+function [ indicesLinesCorrect, indicesCols ] = getIndicesOfLinesAndCols( ...
+    BI, nbLines, nbCols )
 %getIndicesOfLinesAndCols Retourne les indices des lignes et colonnes de
 %chiffres de l'image BI
-% 
+% BI image binaire
+% nbLines nombre de lignes à trouver
+% nbCols nombre colonnes à trouver
 
 % récupération d'une première approximation de la ligne des chiffres.
 

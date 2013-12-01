@@ -55,56 +55,74 @@ NB_CHIFFRES_IMAGE_TEST = NB_COLS_CHIFFRES_IMAGE_TEST * NB_LIGNES_CHIFFRES_IMAGE_
 
 
 
-% ---------------- PARAMETRES DES PROFILS ---------------- %
-%for nbLinePerProfil=1:1
-%    display(nbLinePerProfil);
-%    analyzeNumbersByProfils(IMAGE_FILENAME_LEARN, ...
-%        NB_LIGNES_CHIFFRES_IMAGE_LEARN,NB_COLS_CHIFFRES_IMAGE_LEARN, ...
-%        nbLinePerProfil, COORD_SAVE_FILENAME, IMAGE_FILENAME_TEST, ...
-%        NB_LIGNES_CHIFFRES_IMAGE_TEST, NB_COLS_CHIFFRES_IMAGE_TEST);
-%end
+%------------ début du programme ------------%
 
-%BW = openImage(IMAGE_FILENAME_LEARN);
-
-%coord = [163, 62, 220, 114];
-%coord = [2004, 1058, 2052, 1168];
-%result = analyzePerArea(BW, coord ,10, 4);
-%display(result);
-
-
-j=0;
-for zones=1:8
-        for nbK=1:15
-            probs = calculateProbsKPPV( IMAGE_FILENAME_LEARN, IMAGE_FILENAME_TEST, ...
-                zones, zones, NB_LIGNES_CHIFFRES_IMAGE_LEARN, NB_COLS_CHIFFRES_IMAGE_LEARN, ...
-                NB_LIGNES_CHIFFRES_IMAGE_TEST, NB_COLS_CHIFFRES_IMAGE_TEST, ...
-                DENSITE_SAVE_FILENAME, PROBA_DENSITE_SAVE_FILENAME,nbK)
+nbLinePerProfil=10;
+% évalue les probabilités d'appartenances de chacun des chiffre à chacunes
+% des classes via les profils, et les sauvent dans PROBA_PROFILS_SAVE_FILENAME
+analyzeNumbersByProfils(IMAGE_FILENAME_LEARN, ...
+         NB_LIGNES_CHIFFRES_IMAGE_LEARN,NB_COLS_CHIFFRES_IMAGE_LEARN, ...
+         nbLinePerProfil, COORD_SAVE_FILENAME, PROFILS_SAVE_FILENAME, IMAGE_FILENAME_TEST, ...
+         NB_LIGNES_CHIFFRES_IMAGE_TEST, NB_COLS_CHIFFRES_IMAGE_TEST, ...
+         PROBA_PROFILS_SAVE_FILENAME);
 
 
 
-            sizeP = size(probs);
-            count =0;
-            for i=1:sizeP(1)
-               [val, idx] = max(probs(i,:));
-               if idx==(floor(i/NB_COLS_CHIFFRES_IMAGE_TEST) + 1)
-                   count = count + 1;
-               end
+
+
+nbZones = 5;
+nbK=2;
+% évalue les probabilités d'appartenances de chacun des chiffre à chacunes
+% des classes via densité et KPPV, 
+% et les sauvent dans PROBA_DENSITE_SAVE_FILENAME
+calculateProbsKPPV( IMAGE_FILENAME_LEARN, IMAGE_FILENAME_TEST, ...
+            nbZones, nbZones, NB_LIGNES_CHIFFRES_IMAGE_LEARN, NB_COLS_CHIFFRES_IMAGE_LEARN, ...
+            NB_LIGNES_CHIFFRES_IMAGE_TEST, NB_COLS_CHIFFRES_IMAGE_TEST, ...
+            DENSITE_SAVE_FILENAME, PROBA_DENSITE_SAVE_FILENAME,nbK);
+
+
+
+% Combine les résultats via la méthode de la somme
+resultAdd = combineProbasByAdd(PROBA_PROFILS_SAVE_FILENAME, ...
+                PROBA_DENSITE_SAVE_FILENAME);
+
+
+% Combine les résultats via la méthode du produit
+resultProd = combineProbasByProd(PROBA_PROFILS_SAVE_FILENAME, ...
+                PROBA_DENSITE_SAVE_FILENAME);
+
+% Pour chacuns des résultats ci dessus
+for resultNumber=1:2
+    if resultNumber==1
+        result = resultAdd;
+    end
+    if resultNumber==2
+        result = resultProd;
+    end
+    sizeRet = size(result);
+    nbCorrect = 0;
+    for i=1:sizeRet(1)
+            prob = result(i,:);
+            realClass = floor((i-1)/NB_COLS_CHIFFRES_IMAGE_TEST);
+
+            [~,indice_max] = max(prob);
+            detectedClass = indice_max -1;
+
+             if(realClass == detectedClass)
+                nbCorrect = nbCorrect + 1;
             end
-
-            j = j +1;
-            display(j);
-            percent = 100*count/sizeP(1);
-            display(percent);
-        end
+    end
+    ratio = nbCorrect * 100 / (NB_COLS_CHIFFRES_IMAGE_TEST * NB_LIGNES_CHIFFRES_IMAGE_TEST);
+    
+    if resultNumber==1
+        display('Résultats par la somme des probas calculées par chacun des classifieurs :');
+    end
+    if resultNumber==2
+        display('Résultats par produits des probas calculées par chacun des classifieurs :');
+    end
+    display(ratio);
 end
-
-% checker si résultat ok :X
-% http://fr.wikipedia.org/wiki/Recherche_des_plus_proches_voisins
-% save file probas
-% relire tout les commentaires + en ajouter
-
-
-
+       
 
 
 

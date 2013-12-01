@@ -4,6 +4,8 @@ function [ BW ] = openImage( filename )
 
 BW = imread(filename);
 
+% Inverse l'image : pour avoir une image blanc sur noir. Utile dans la
+% recherche des pixels blancs.
 BW=~BW;
 end
 
